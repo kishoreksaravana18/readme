@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kishore S. | Performance Marketing Manager</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts: Inter and JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons & 3D Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        porsche: {
+                            dark: 'var(--bg-primary)',
+                            light: 'var(--text-primary)',
+                            red: '#d5001c',
+                            gray: 'var(--bg-secondary)',
+                            hover: 'var(--bg-hover)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Arial', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0e0e12;
+            --bg-secondary: #1f1f25;
+            --bg-hover: #2d2d35;
+            --text-primary: #fbfcff;
+            --text-secondary: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --porsche-red: #d5001c;
+            --nav-bg: rgba(14, 14, 18, 0.9);
+        }
+
+        .light-mode {
+            --bg-primary: #fbfcff;
+            --bg-secondary: #f3f4f6;
+            --bg-hover: #e5e7eb;
+            --text-primary: #0e0e12;
+            --text-secondary: #4b5563;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(0, 0, 0, 0.03);
+            --nav-bg: rgba(251, 252, 255, 0.9);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .bg-porsche-dark { background-color: var(--bg-primary) !important; }
+        .bg-porsche-gray { background-color: var(--bg-secondary) !important; }
+        .text-porsche-light { color: var(--text-primary) !important; }
+        .text-gray-400 { color: var(--text-secondary) !important; }
+        .border-white\/10 { border-color: var(--border-color) !important; }
+        .glass-panel { background: var(--glass-bg); border-color: var(--border-color); }
+        nav { background-color: var(--nav-bg) !important; }
+
+        /* Pull Switch UI */
+        #pull-switch-container {
+            position: fixed;
+            top: 0;
+            right: 40px;
+            z-index: 100;
+            width: 40px;
+            height: 200px;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+        #pull-switch-container:active { cursor: grabbing; }
+
+        #switch-wire {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            background: #666;
+            transform: translateX(-50%);
+            height: 100px;
+            transition: height 0.1s ease-out;
+        }
+
+        #switch-bulb {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: #333;
+            border-bottom-left-radius: 50%;
+            border-bottom-right-radius: 50%;
+        }
+
+        #switch-handle {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 14px;
+            height: 14px;
+            background: #888;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .bulb-glow {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #ffd700;
+            filter: blur(15px);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .light-mode .bulb-glow { opacity: 0.8; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .img-zoom {
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .group:hover .img-zoom { transform: scale(1.05); }
+
+        #globe-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .tag-pill {
+            background: rgba(213, 0, 28, 0.1);
+            border: 1px solid rgba(213, 0, 28, 0.2);
+            color: #d5001c;
+            padding: 4px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        /* Fallback Globe Styling */
+        .globe-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* Chat Animations */
+        .message-anim {
+            animation: messageSlide 0.3s ease forwards;
+        }
+        @keyframes messageSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: typingBounce 1s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+    </style>
+</head>
+<body class="transition-colors duration-500">
+
+    <!-- Interactive Pull Switch -->
+    <div id="pull-switch-container">
+        <div id="switch-wire">
+            <div id="switch-handle"></div>
+        </div>
+        <div id="switch-bulb">
+            <div class="bulb-glow"></div>
+            <svg viewBox="0 0 24 24" class="w-full h-full p-1 text-gray-400">
+                <path fill="currentColor" d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-[1920px] mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="text-2xl font-semibold tracking-wide flex items-center gap-2">
+                <span class="text-porsche-light uppercase">KISHORE S.</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8 text-sm font-medium tracking-wide">
+                <a href="#experience" class="hover:text-porsche-red transition-colors uppercase text-xs tracking-widest">Experience</a>
+                <a href="#projects" class="hover:text-porsche-red transition-colors uppercase text-xs tracking-widest">Projects</a>
+                <a href="#education" class="hover:text-porsche-red transition-colors uppercase text-xs tracking-widest">Education</a>
+                <a href="#ai-assistant" class="hover:text-porsche-red transition-colors uppercase text-xs tracking-widest">AI Hub</a>
+                <a href="#contact" class="hover:text-porsche-red transition-colors uppercase text-xs tracking-widest">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative h-screen w-full flex items-center justify-center overflow-hidden pt-20">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop" 
+                 alt="Performance Metrics Analytics" 
+                 class="w-full h-full object-cover opacity-20 grayscale brightness-75 contrast-125">
+            <div class="absolute inset-0 bg-gradient-to-t from-porsche-dark via-porsche-dark/80 to-transparent"></div>
+        </div>
+
+        <div class="relative z-10 max-w-[1600px] w-full px-6 grid grid-cols-1 md:grid-cols-12 gap-8 items-end pb-20">
+            <div class="md:col-span-8 space-y-6 fade-in-up" style="animation-delay: 0.2s;">
+                <h2 class="text-porsche-red font-semibold tracking-widest text-sm uppercase">Senior Performance Marketing Manager</h2>
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight uppercase text-porsche-light">
+                    Marketing<br>Automation
+                </h1>
+                <p class="text-xl max-w-2xl font-light leading-relaxed">
+                    I build and manage marketing operations and strategies—setting up and optimizing platforms like Google Ads and Meta, creating automated workflows, and using data to improve performance.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#experience" class="bg-porsche-red text-white px-8 py-4 font-semibold hover:brightness-110 transition-all flex items-center gap-2 uppercase tracking-wider text-sm shadow-lg">
+                        View Career History
+                    </a>
+                    <a href="#contact" class="border border-porsche-red text-porsche-red px-8 py-4 font-semibold hover:bg-porsche-red hover:text-white transition-all uppercase tracking-wider text-sm">
+                        Connect with me
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Experience Section -->
+    <section id="experience" class="py-24 px-6 max-w-[1600px] mx-auto">
+        <div class="mb-16 border-l-4 border-porsche-red pl-6">
+            <h2 class="text-4xl font-bold mb-2 text-porsche-light uppercase tracking-tighter text-sm md:text-4xl">Career Models</h2>
+            <p class="text-gray-400 font-light italic">A timeline of high-performance roles.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Job 1 -->
+            <div class="group relative bg-porsche-gray overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-2xl transition-all duration-500">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover img-zoom opacity-80 group-hover:opacity-100 transition-opacity" alt="Data Analytics">
+                    <div class="absolute inset-0 bg-gradient-to-t from-porsche-gray to-transparent"></div>
+                    <div class="absolute bottom-4 left-4">
+                        <span class="bg-white text-black text-xs font-bold px-2 py-1 uppercase tracking-wider">Current</span>
+                    </div>
+                </div>
+                <div class="p-8 flex flex-col flex-grow text-porsche-light">
+                    <h3 class="text-2xl font-bold mb-1 uppercase tracking-tight">Video Power Marketing</h3>
+                    <p class="text-gray-400 text-sm mb-4 italic font-light">Salt Lake City, Utah</p>
+                    <h4 class="text-porsche-red font-medium mb-4 uppercase tracking-widest text-xs">Sr. Performance Marketing Manager</h4>
+                    <ul class="text-gray-300 text-sm space-y-3 mb-8 font-light flex-grow">
+                        <li>Managed and structured $2M in marketing budget.</li>
+                        <li>Developed investment strategies for 7+ retirement finance accounts.</li>
+                        <li>Increased investment by 314k within 30 days via automated budget monitoring.</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Job 2 -->
+            <div class="group relative bg-porsche-gray overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-2xl transition-all duration-500">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop" class="w-full h-full object-cover img-zoom opacity-80 group-hover:opacity-100 transition-opacity" alt="Marketing Chart">
+                    <div class="absolute inset-0 bg-gradient-to-t from-porsche-gray to-transparent"></div>
+                </div>
+                <div class="p-8 flex flex-col flex-grow text-porsche-light">
+                    <h3 class="text-2xl font-bold mb-1 uppercase tracking-tight">Renovations Angels</h3>
+                    <p class="text-gray-400 text-sm mb-4 italic font-light">Teaneck, NJ</p>
+                    <h4 class="text-porsche-red font-medium mb-4 uppercase tracking-widest text-xs">Senior Marketing Data Analyst</h4>
+                    <ul class="text-gray-300 text-sm space-y-3 mb-8 font-light flex-grow">
+                        <li>Managed $2M in vendor resources and monitored CRM workflows.</li>
+                        <li>Drove 123k+ in-person participants within 8 weeks.</li>
+                        <li>Increased customer retention by 22% YOY using Klaviyo & Salesforce.</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Job 3 -->
+            <div class="group relative bg-porsche-gray overflow-hidden cursor-pointer h-full flex flex-col hover:shadow-2xl transition-all duration-500">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover img-zoom opacity-80 group-hover:opacity-100 transition-opacity" alt="E-commerce Data">
+                    <div class="absolute inset-0 bg-gradient-to-t from-porsche-gray to-transparent"></div>
+                </div>
+                <div class="p-8 flex flex-col flex-grow text-porsche-light">
+                    <h3 class="text-2xl font-bold mb-1 uppercase tracking-tight">Verizon</h3>
+                    <p class="text-gray-400 text-sm mb-4 italic font-light">Jersey City, NJ</p>
+                    <h4 class="text-porsche-red font-medium mb-4 uppercase tracking-widest text-xs">Business Analyst - SEO</h4>
+                    <ul class="text-gray-300 text-sm space-y-3 mb-8 font-light flex-grow">
+                        <li>Improved campaign deliverability rates by 18% via Salesforce audits.</li>
+                        <li>Analyzed 1M+ rows of behavior data, increasing user adoption by 20%.</li>
+                        <li>Led ETL for 7 data models and automated AI reporting.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance Engineering Section -->
+    <section id="projects" class="py-24 px-6 max-w-[1600px] mx-auto bg-porsche-dark">
+        <div class="mb-16 border-l-4 border-porsche-red pl-6 text-porsche-light">
+            <h2 class="text-4xl font-bold mb-2 uppercase tracking-tighter">Performance Engineering</h2>
+            <p class="text-gray-400 font-light text-sm uppercase tracking-widest italic">Technical assets and automated architectures.</p>
+        </div>
+
+        <div class="space-y-16">
+            <!-- Project 01: AI ETL -->
+            <div class="glass-panel p-8 md:p-12 flex flex-col lg:flex-row gap-12 items-center">
+                <div class="w-full lg:w-1/2 space-y-6 text-porsche-light">
+                    <div class="flex gap-2">
+                        <span class="tag-pill">Backend Engineering</span>
+                        <span class="tag-pill">AI Automation</span>
+                    </div>
+                    <h3 class="text-3xl md:text-4xl font-bold tracking-tight uppercase tracking-tighter">AI-Driven ETL & Automated Insights</h3>
+                    <p class="text-gray-400 font-light leading-relaxed max-w-xl">
+                        Architected a robust <span class="text-white font-medium">N8N workflow</span> designed to perform high-speed <span class="text-white font-medium">ETL to PostgreSQL</span> databases. Integrated custom JavaScript logic for real-time validation and AI-generated performance reports.
+                    </p>
+                    <div class="p-4 border-l-2 border-porsche-red bg-white/5">
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Key Achievement</p>
+                        <p class="text-sm font-medium">Reduced reporting latency by 90% for high-profile client networks.</p>
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2">
+                    <div class="bg-black rounded-lg border border-white/10 shadow-2xl overflow-hidden font-mono text-[13px]">
+                        <div class="bg-porsche-gray px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                            <div class="flex gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-porsche-red"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
+                            </div>
+                            <span class="text-gray-500 text-[10px] uppercase tracking-widest">n8n_etl_validator.js</span>
+                        </div>
+                        <div class="p-6 text-gray-300 leading-relaxed overflow-x-auto whitespace-nowrap">
+                            <p><span class="text-porsche-red">const</span> client = <span class="text-green-400">'Darren Hardy'</span>;</p>
+                            <p class="mt-2 text-gray-500">// Run ETL to PostgreSQL</p>
+                            <p><span class="text-blue-400">await</span> pgClient.query(<span class="text-green-400">`INSERT INTO performance...`</span>);</p>
+                            <p class="mt-4 text-gray-500">// AI Sentiment Analysis</p>
+                            <p><span class="text-porsche-red">const</span> insight = <span class="text-blue-400">await</span> aiAgent.generate(data);</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 02: Flightaves -->
+            <div class="glass-panel p-8 md:p-12 flex flex-col lg:flex-row-reverse gap-12 items-center">
+                <div class="w-full lg:w-1/2 space-y-6 text-porsche-light">
+                    <div class="flex gap-2">
+                        <span class="tag-pill">SaaS Interface</span>
+                        <span class="tag-pill">Three.js</span>
+                    </div>
+                    <h3 class="text-3xl md:text-4xl font-bold tracking-tight uppercase tracking-tighter">Flightaves: Intelligent Travel Interface</h3>
+                    <p class="text-gray-400 font-light leading-relaxed max-w-xl">
+                        Developed <span class="text-white font-medium">Flightaves</span>, a modern travel ecosystem built to handle complex flight data queries with a premium, low-latency UI.
+                    </p>
+                    <div class="pt-4">
+                        <a href="https://kishoreksaravana18.github.io/Flightaves/" target="_blank" 
+                           class="inline-flex items-center gap-3 bg-white text-black px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-porsche-red hover:text-white transition-all duration-300 group shadow-xl">
+                            Launch Live Application 
+                            <i data-lucide="external-link" class="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2">
+                    <div class="bg-[#050507] rounded-sm border border-white/10 shadow-2xl overflow-hidden relative min-h-[400px] group">
+                        <div id="globe-container" class="absolute inset-0 z-0"></div>
+                        <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-porsche-red rounded flex items-center justify-center text-white shadow-lg">
+                                        <i data-lucide="plane" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold uppercase tracking-tight text-white">FLIGHTAVES</h4>
+                                        <p class="text-[9px] text-gray-500 uppercase font-mono tracking-widest">LIVE NETWORK HUB v1.0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Academic Foundation Section -->
+    <section id="education" class="py-24 px-6 max-w-[1600px] mx-auto overflow-hidden">
+        <div class="mb-16 border-l-4 border-porsche-red pl-6 text-porsche-light">
+            <h2 class="text-4xl font-bold mb-2 uppercase tracking-tighter">Academic Foundation</h2>
+            <p class="text-gray-400 font-light text-sm uppercase tracking-widest italic">Global credentials and leadership excellence.</p>
+        </div>
+        <div class="glass-panel p-8 md:p-16 relative overflow-hidden text-porsche-light">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start relative z-10">
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="space-y-2">
+                        <h3 class="text-3xl font-bold uppercase tracking-tight">New York Institute<br>of Technology</h3>
+                        <p class="text-porsche-red font-mono text-sm font-bold uppercase tracking-widest">Master of Business Administration (MBA)</p>
+                    </div>
+                    <div class="bg-black/20 border border-white/10 p-8 rounded shadow-inner inline-block">
+                        <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Academic Standing</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-6xl font-bold">3.83</span>
+                            <span class="text-gray-500 text-xl font-light">/ 4.0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400">Executive Leadership</h4>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-4">
+                                <i data-lucide="crown" class="w-4 h-4 text-porsche-red"></i>
+                                <div>
+                                    <p class="text-sm font-bold uppercase tracking-tight">President</p>
+                                    <p class="text-xs text-gray-500 font-light italic">Graduate Student Association</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4">
+                                <i data-lucide="users" class="w-4 h-4 text-porsche-red"></i>
+                                <div>
+                                    <p class="text-sm font-bold uppercase tracking-tight">President</p>
+                                    <p class="text-xs text-gray-500 font-light italic">Student Advisory Board</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-6">
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400">Honors</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tag-pill">Summa Cum Laude</span>
+                            <span class="tag-pill">Beta Gamma Sigma</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: AI Assistant (Gemini) -->
+    <section id="ai-assistant" class="py-24 px-6 max-w-[1600px] mx-auto overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-4 space-y-6 text-porsche-light">
+                <div class="mb-8 border-l-4 border-porsche-red pl-6">
+                    <h2 class="text-4xl font-bold mb-2 uppercase tracking-tighter">AI Knowledge Hub</h2>
+                    <p class="text-gray-400 font-light text-sm uppercase tracking-widest">Instant insights powered by Gemini 2.5.</p>
+                </div>
+                <p class="text-gray-400 font-light leading-relaxed">
+                    Ask my virtual assistant anything about my career history, technical expertise, or current marketing strategies.
+                </p>
+                <div class="p-6 bg-porsche-red/10 border border-porsche-red/20 rounded">
+                    <div class="flex items-center gap-3 text-porsche-red mb-4">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        <span class="text-xs font-bold uppercase tracking-widest">Example Queries</span>
+                    </div>
+                    <ul class="text-xs space-y-3 font-medium opacity-80">
+                        <li class="cursor-pointer hover:text-white transition-colors" onclick="setQuery('What is your current role?')">"What is your current role?"</li>
+                        <li class="cursor-pointer hover:text-white transition-colors" onclick="setQuery('Tell me about your MBA leadership roles.')">"Tell me about your MBA leadership roles."</li>
+                        <li class="cursor-pointer hover:text-white transition-colors" onclick="setQuery('How did you improve retention by 22%?')">"How did you improve retention by 22%?"</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="glass-panel flex flex-col h-[500px] rounded shadow-2xl relative">
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-white/10 flex items-center justify-between bg-black/20">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-porsche-red flex items-center justify-center text-white shadow-lg">
+                                <i data-lucide="bot" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-porsche-light">Kishore Assistant <span class="text-green-500 opacity-60 ml-2">• Live</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="chat-messages" class="flex-grow p-6 overflow-y-auto space-y-4 font-sans text-sm scroll-smooth">
+                        <div class="bg-white/5 p-4 rounded max-w-[80%] border border-white/5 message-anim text-gray-300">
+                            Hello! I am Kishore's virtual AI representative. I can provide detailed insights on his performance marketing history, projects like Flightaves, and his academic credentials at NYIT. How can I help you today?
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-4 border-t border-white/10 bg-black/10">
+                        <form id="chat-form" class="flex gap-2">
+                            <input type="text" id="chat-input" placeholder="Ask about Kishore..." 
+                                   class="flex-grow bg-white/5 border border-white/10 p-3 rounded text-white text-xs outline-none focus:border-porsche-red transition-all">
+                            <button type="submit" id="chat-submit" class="bg-porsche-red text-white p-3 rounded hover:brightness-110 transition-all flex items-center justify-center">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-porsche-gray pt-24 pb-12 px-6 border-t border-white/5">
+        <div class="max-w-[1600px] mx-auto text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-8 uppercase tracking-tighter">Ready to Accelerate?</h2>
+            <div class="flex flex-col md:flex-row justify-center gap-6 mb-16">
+                <button onclick="copyEmail()" class="flex items-center justify-center gap-4 bg-porsche-red text-white px-10 py-5 font-bold hover:brightness-110 transition-all min-w-[360px] uppercase tracking-widest text-sm relative shadow-2xl">
+                    <i data-lucide="copy" class="w-5 h-5 opacity-70"></i> 
+                    <span>KishoreSaravana@hotmail.com</span>
+                    <div id="copyTooltip" class="copy-tooltip">Copied to Clipboard</div>
+                </button>
+            </div>
+            <div class="flex justify-between items-end border-t border-white/10 pt-8 text-xs text-gray-500 uppercase tracking-widest font-mono">
+                <div>© 2025 Kishore S.</div>
+                <div class="flex gap-6 text-porsche-light">
+                    <span>Performance Marketing</span>
+                    <span>Data Analysis</span>
+                    <span>Automation</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // --- GEMINI CHATBOT LOGIC ---
+        const apiKey = ""; // Provided by environment
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatSubmit = document.getElementById('chat-submit');
+
+        const systemPrompt = `
+            You are the personal AI representative for Kishore S., a Senior Performance Marketing Manager. 
+            Tone: Professional, positive, data-driven, and highly helpful.
+            
+            KISHORE'S DATA:
+            - Current: Video Power Marketing (Sr Performance Marketing Manager). Managed $2M budget. Increased investment by $314k in 30 days.
+            - Previous: Renovations Angels (Sr Manager Marketing Ops). Secure $2.5M funding. Drew 123k+ event participants. Improved retention by 22% YoY.
+            - Previous: Verizon (Business Analyst). Analyzed 1M+ rows. Improved deliverability by 18%.
+            - Education: MBA from NYIT (GPA 3.83, Summa Cum Laude). President of Graduate Student Association.
+            - Projects: Flightaves (Intelligent Travel SaaS with Three.js), AI-Driven ETL (N8N/Postgres).
+            - Skills: Google Ads, Meta Ads, N8N, Zapier, SQL, Azure, Python, Snowflake.
+            
+            RULES:
+            1. If someone asks for info NOT listed here, say "I don't have that specific information on hand, but Kishore would be happy to discuss this directly. Please contact him at KishoreSaravana@hotmail.com."
+            2. Be concise but highlight metrics ($ and % results).
+            3. Always maintain a professional 'Porsche-like' premium brand tone.
+        `;
+
+        function addMessage(text, isUser = false) {
+            const msg = document.createElement('div');
+            msg.className = isUser ? 'bg-porsche-red/20 ml-auto p-4 rounded max-w-[80%] border border-porsche-red/10 message-anim text-white' : 'bg-white/5 p-4 rounded max-w-[80%] border border-white/5 message-anim text-gray-300';
+            msg.innerText = text;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'typing-indicator';
+            indicator.className = 'bg-white/5 p-4 rounded w-16 border border-white/5 message-anim flex gap-1 items-center justify-center';
+            indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            chatMessages.appendChild(indicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const el = document.getElementById('typing-indicator');
+            if (el) el.remove();
+        }
+
+        async function fetchGeminiResponse(userText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userText }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            // Exponential Backoff Retries
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error('API Error');
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (err) {
+                    if (i === 4) return "I'm having trouble connecting right now. Please email Kishore directly at KishoreSaravana@hotmail.com.";
+                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                }
+            }
+        }
+
+        chatForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, true);
+            chatInput.value = '';
+            chatSubmit.disabled = true;
+            showTypingIndicator();
+
+            const response = await fetchGeminiResponse(text);
+            
+            removeTypingIndicator();
+            addMessage(response);
+            chatSubmit.disabled = false;
+        };
+
+        window.setQuery = (q) => {
+            chatInput.value = q;
+            chatForm.dispatchEvent(new Event('submit'));
+        };
+
+        // --- PREVIOUS LOGIC (Switch, Globe) ---
+        const switchContainer = document.getElementById('pull-switch-container');
+        const wire = document.getElementById('switch-wire');
+        const body = document.body;
+        let startY = 0, isDragging = false;
+        const baseHeight = 100, threshold = 60;
+
+        switchContainer.addEventListener('mousedown', (e) => {
+            isDragging = true; startY = e.clientY;
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const delta = Math.max(0, e.clientY - startY);
+            wire.style.height = (baseHeight + Math.min(delta, 100)) + 'px';
+        });
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            if (parseInt(wire.style.height) - baseHeight > threshold) body.classList.toggle('light-mode');
+            wire.style.height = baseHeight + 'px';
+        });
+
+        function copyEmail() {
+            const email = 'KishoreSaravana@hotmail.com';
+            const temp = document.createElement('textarea');
+            temp.value = email; document.body.appendChild(temp);
+            temp.select(); document.execCommand('copy');
+            document.body.removeChild(temp);
+            const tooltip = document.getElementById('copyTooltip');
+            tooltip.classList.add('show'); setTimeout(() => tooltip.classList.remove('show'), 2500);
+        }
+
+        window.onload = function() {
+            const container = document.getElementById('globe-container');
+            if (!container) return;
+            function detectWebGL() { try { const canvas = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))); } catch (e) { return false; } }
+            if (!detectWebGL()) { container.innerHTML = '<div class="globe-fallback"><svg viewBox="0 0 200 200" width="300" height="300" fill="none" stroke="#d5001c" stroke-width="0.5"><circle cx="100" cy="100" r="80" opacity="0.3"/></svg></div>'; return; }
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, failIfMajorPerformanceCaveat: false });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 5;
+            const globe = new THREE.Mesh(new THREE.SphereGeometry(2, 48, 48), new THREE.MeshBasicMaterial({ color: 0xd5001c, wireframe: true, transparent: true, opacity: 0.1 }));
+            scene.add(globe);
+            function animate() { requestAnimationFrame(animate); globe.rotation.y += 0.0015; renderer.render(scene, camera); }
+            animate();
+        };
+    </script>
+</body>
+</html>
